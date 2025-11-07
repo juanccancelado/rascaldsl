@@ -7,9 +7,6 @@ import AST;
 import Parser;
 
 
-
-
-
 void main() {
   loc src = |project://rascaldsl/instance/spec1.rascal|;
   Program ast;
@@ -17,7 +14,7 @@ void main() {
   try {
     ast = Parser::parseProgram(src);
   } 
-  catch ParseError pe {
+  catch ParseError :  {
     println("Error al parsear: <pe>");
     return;
   }
@@ -27,11 +24,10 @@ void main() {
 
   writeFile(outLoc, outText);
 
-
   try {
     
     ast = Parser::parseProgram(src);
-  } catch (ParseError pe) {
+  } catch ParseError : {
     println("No se pudo parsear el archivo " + toString(src) + ": <pe>");
     return;
   }
@@ -53,7 +49,7 @@ str generator(Program program) {
   program(mods) = program;
   list[str] parts = [
     "=== Resumen del programa ===",
-    "Numero de declaraciones de modulo: <|mods|>"
+    "Numero de declaraciones de modulo: <mods>"
   ];
 
   // detalles por módulo
@@ -61,10 +57,8 @@ str generator(Program program) {
     parts += generateModuleDecl(m);
   }
 
-  return join(parts, "\n\n");
+  return parts;
 }
-
-
 
 str generateModuleDecl(ModuleDecl m) {
   switch (m) {
