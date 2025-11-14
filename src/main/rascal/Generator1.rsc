@@ -1,10 +1,11 @@
-module Generator1
+module Generator
 
 import IO;
 import List;
 import String;
 import AST;
 import Parser;
+import String;
 
 
 void main() {
@@ -64,13 +65,17 @@ str generateModuleDecl(ModuleDecl m) {
   switch (m) {
     case moduleFunc(functionDef(name, params, body)):
       return "Module: function " + name + "\n" +
-             "  params: (" + join(params, ", ") + ")\n" +
+             "  params: (" + strJoin(params, ", ") + ")\n" +
              "  body:\n" + indent(generateBlock(body), 4);
+
     case moduleData(dataDef(name, fields, methods)):
-      list[str] mm = [ generateFunctionDef(fd) | fd <- methods ];
+      {
+        list[str] mm = [ generateFunctionDef(fd) | fd <- methods ];      
       return "Module: data " + name + "\n" +
-             "  fields: (" + join(fields, ", ") + ")\n" +
-             "  methods:\n" + indent(join(mm, "\n\n"), 4);
+             "  fields: (" + strJoin(fields, ", ") + ")\n" +
+             "  methods:\n" + indent(strJoin(mm, "\n\n"), 4);
+      }
+
     default:
       return "Module: (unknown)";
   }
@@ -78,37 +83,37 @@ str generateModuleDecl(ModuleDecl m) {
 
 str generateFunctionDef(FunctionDef f) {
   functionDef(fname, fparams, fbody) = f;
-  return "function " + fname + "(" + join(fparams, ", ") + ")\n" +
+  return "function " + fname + "(" + strJoin(fparams, ", ") + ")\n" +
          indent(generateBlock(fbody), 2);
 }
 
 str generateBlock(Block b) {
   block(stmts) = b;
-  if (|stmts| == 0) {
+  if (stmts == 0) {
     return "(empty block)";
   }
   list[str] lines = [ generateStatement(s) | s <- stmts ];
-  return join(lines, "\n");
+  return strJoin(lines, "\n");
 }
 
 str generateStatement(Statement s) {
   switch (s) {
-    case assign(name, value):
-      return name + " = " + generateExpr(value) + ";";
+    case assign(name, val):
+      return name + " = " + generateExpr(val) + ";";
     case exprStmt(e):
       return generateExpr(e) + ";";
     case ifStmt(cond, thenB, elseB):
       return "if " + generateExpr(cond) + " then\n" +
              indent(generateBlock(thenB), 2) + "\nelse\n" +
              indent(generateBlock(elseB), 2) + "\nend";
-    case forRange(var, start, end, body):
-      return "for " + var + " from " + generateExpr(start) + " to " + generateExpr(end) + " do\n" +
+    case forRange(var, strt, end, body):
+      return "for " + var + " from " + generateExpr(strt) + " to " + generateExpr(end) + " do\n" +
              indent(generateBlock(body), 2) + "\nend";
     case forIn(var, iterable, body):
       return "for " + var + " in " + generateExpr(iterable) + " do\n" +
              indent(generateBlock(body), 2) + "\nend";
     default:
-      return "<unknown statement>";
+      return "unknown statement";
   }
 }
 
@@ -120,9 +125,9 @@ str generateExpr(Expr e) {
     case var(name):
       return name;
     case call(func, args):
-      return func + "(" + join([ generateExpr(a) | a <- args ], ", ") + ")";
+      return func + "(" + strJoin([ generateExpr(a) | a <- args ], ", ") + ")";
     case dollarCall(func, args):
-      return func + "$(" + join([ generateExpr(a) | a <- args ], ", ") + ")";
+      return func + "$(" + strJoin([ generateExpr(a) | a <- args ], ", ") + ")";
     case dot(left, field):
       return generateExpr(left) + "." + field;
     case neg(ex):
@@ -130,11 +135,11 @@ str generateExpr(Expr e) {
     case binOp(left, op, right):
       return generateExpr(left) + " " + opToStr(op) + " " + generateExpr(right);
     case tupleExpr(elems):
-      return "(" + join([ generateExpr(x) | x <- elems ], ", ") + ")";
+      return "(" + strJoin([ generateExpr(x) | x <- elems ], ", ") + ")";
     case listExpr(elems):
-      return "[" + join([ generateExpr(x) | x <- elems ], ", ") + "]";
+      return "[" + strJoin([ generateExpr(x) | x <- elems ], ", ") + "]";
     default:
-      return "<unknown expr>";
+      return "unknown expr";
   }
 }
 
@@ -164,14 +169,14 @@ str opToStr(Op op) {
     case sub(): return "-";
     case mul(): return "*";
     case div(): return "/";
-    case mod(): return "%";
+    case md(): return "%";
     case pow(): return "**";
-    case lt(): return "<";
-    case gt(): return ">";
-    case le(): return "<=";
-    case ge(): return ">=";
+    case lt(): return "\<";
+    case gt(): return "\>";
+    case le(): return "\<=";
+    case ge(): return "\>=";
     case eq(): return "==";
-    case ne(): return "<>";
+    case ne(): return "\<\>";
     case and(): return "and";
     case or(): return "or";
     default: return "<op?>";
@@ -181,5 +186,5 @@ str opToStr(Op op) {
 str indent(str s, int n) {
   list[str] lines = split(s, "\n");
   str pad = repeat(" ", n);
-  return join([ pad + l | l <- lines ], "\n");
+  return strJoin([ pad + l | l <- lines ], "\n");
 }
