@@ -30,13 +30,16 @@ syntax MethodList= FunctionDef ( NL FunctionDef )* ;
 syntax Block = ( Statement NL )* ;
 
 syntax Statement
-  = ID ( "," ID )+ // reemplazamos * por + para diferenciar ID y Expr
+  = ID ":" Type "=" Expr
+  | ID ":" Type
   | ID "=" Expr
+  | ID ( "," ID )+
   | IfExpr
   | CondExpr
   | ForStmt
-  | Expr  
+  | Expr
   ;
+
 
 syntax IfExpr  = "if" Expr "then" NL Block "else" NL Block "end" ;
 syntax CondExpr= "cond" Expr "do" CondClause ( NL CondClause )* "end" ;
@@ -67,3 +70,11 @@ syntax ArgList = Arg ( "," Arg )* ;
 syntax Arg     = Expr | ID ":" Expr ;
 
 syntax Literal = NUMBER | STRING | "true" | "false" ;
+
+syntax Type
+  = "Int"
+  | "Bool"
+  | "Char"
+  | "String"
+  | ID  
+  ;

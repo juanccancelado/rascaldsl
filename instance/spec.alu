@@ -1,0 +1,9 @@
+x : Int = 10
+y : Int = x + 5
+
+data Point with x, y
+
+p : Point
+p = (10, 20)
+
+z : Bool = true
