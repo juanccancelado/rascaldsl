@@ -12,7 +12,8 @@ lexical ID     = [a-z] [a-z0-9]* \ KW;
 lexical NUMBER = [0-9]+ ("." [0-9]+)? ;
 lexical STRING = "\"" ![\"]*  "\""; 
 
-start syntax Program = ModuleDecl+ | Expr | Block;
+start syntax Program = ModuleDecl* Block?;
+
 
 
 syntax FunctionDef = ID "=" "function" "(" ParamList? ")" "do" NL Block "end" ID ;
@@ -77,4 +78,5 @@ syntax Type
   | "Char"
   | "String"
   | ID  
+  | "Bool"
   ;
